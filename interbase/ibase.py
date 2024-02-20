@@ -239,6 +239,7 @@ SQL_QUAD = 550
 SQL_TYPE_TIME = 560
 SQL_TYPE_DATE = 570
 SQL_INT64 = 580
+SQL_BOOLEAN = 590
 
 SQLIND_NULL = (1 << 15)
 SQLIND_INSERT = (1 << 0)
@@ -1941,7 +1942,8 @@ def get_library_name(embedded) -> str:
     windows_32_elib = "ibtogo.dll"
     windows_64_lib = "ibclient64.dll"
     windows_64_elib = "ibtogo64.dll"
-    linux_lib = "gds"
+    #linux_lib = "gds"
+    linux_lib = "libgds"
     linux_elib = "ibtogo"
     macos_lib = "libgds"
     macos_elib = "libibtogo"
@@ -1982,23 +1984,28 @@ class ibclient_API(object):
             return None
 
     def __init__(self, ib_library_name=None, embedded=False):
-        if ib_library_name is None:
-            name = get_library_name(embedded)
-            ib_library_name = find_library(name)
-            if not ib_library_name and sys.platform == 'win32':
-                ib_library_name = self.__find_windows_library_in_registry(name)
+        # if ib_library_name is None:
+        #     name = get_library_name(embedded)
+        #     ib_library_name = find_library(name)
+        #     if not ib_library_name and sys.platform == 'win32':
+        #         ib_library_name = self.__find_windows_library_in_registry(name)
 
-            if not ib_library_name:
-                raise Exception("Failed to locate the InterBase client library.")
+        #     if not ib_library_name:
+        #         raise Exception("Failed to locate the InterBase client library.")
 
-        elif not os.path.exists(ib_library_name):
-            raise Exception("InterBase Client Library '%s' not found" % ib_library_name)
+        # elif not os.path.exists(ib_library_name):
+        #     raise Exception("InterBase Client Library '%s' not found" % ib_library_name)
 
-        if sys.platform in ('win32', 'cygwin', 'os2', 'os2emx'):
-            ib_library = WinDLL(ib_library_name)
-        else:
+        # if sys.platform in ('win32', 'cygwin', 'os2', 'os2emx'):
+        #     ib_library = WinDLL(ib_library_name)
+        # else:
+        #    ib_library = CDLL(ib_library_name)
+        
+        ib_library_name = '/opt/interbase/lib/libgds.so'
+        if os.path.exists(ib_library_name):
             ib_library = CDLL(ib_library_name)
-
+        else:
+            raise Exception("InterBase Client Library '%s' not found" % ib_library_name)
         self.isc_attach_database = ib_library.isc_attach_database
         self.isc_attach_database.restype = ISC_STATUS
         self.isc_attach_database.argtypes = [POINTER(ISC_STATUS), c_short, STRING,
